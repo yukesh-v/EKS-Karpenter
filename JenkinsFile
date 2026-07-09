@@ -24,37 +24,35 @@ parameters {
             }
         }
         stage('deploy-eks-cluster'){
-            steps{
                 when{
-                    ${params.Action} == deploy
+                    ${params.Action} == deploy }
+                  steps{
                     sh 'python eks-creation.py --stack_name ${CLUSTER_NAME} --region ${REGION} --subnet-ids ${SUBNET_IDS} --security-group ${SECURITY_GROUP} --cluster_version ${CLUSTER_VERSION} --instance_types ${INSTANCE_TYPES} --cluster_name ${CLUSTER_NAME}'
                 }
             }
-        }
         stage('delete-eks-cluster'){
-            steps{
                 when{
-                    ${params.Action} == delete
+                    ${params.Action} == delete }
+                  steps{
                     sh 'python eks-deletion.py --stack_name ${CLUSTER_NAME} --region ${REGION}'
                 }
             }
-        }
         stage('Update kubeconfig'){
-            steps{
+            
                 when{
-                    ${params.Action} == deploy
+                    ${params.Action} == deploy }
+                  steps{
                 sh 'aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${REGION}'
              }
           }
-        }
+
         stage('Install Karpenter'){
-            steps{
                 when{
-                    ${params.Action} == deploy
+                    ${params.Action} == deploy }
+            steps{
                 ansiblePlaybook playbook: "install-karpenter.yaml -vvv --extra-vars 'cluster_name=${CLUSTER_NAME} region=${REGION}'" 
             }
           }
-        }
 
         post{
             always{
