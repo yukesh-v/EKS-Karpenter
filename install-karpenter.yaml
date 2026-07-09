@@ -1,5 +1,6 @@
 - name: Install Karpenter in the cluster
   hosts: localhost
+  become: true
   gather_facts: false
   vars: 
     CLUSTER_NAME: "{{ cluster_name }}"
@@ -22,10 +23,6 @@
       chmod 700 get_helm.sh
       ./get_helm.sh
       rm get_helm.sh
-
-  - name: Update kubectl context to use the EKS cluster
-    shell: |
-      aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME}
       
   roles: 
     - role: Karpenter
