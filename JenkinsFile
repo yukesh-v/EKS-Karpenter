@@ -1,63 +1,68 @@
-pipeline{
+pipeline {
     agent any
 
-parameters {
-    string(name: 'CLUSTER_NAME', description: 'Name of the CloudFormation stack to create')
-    string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region to deploy the stack')
-    string(name: 'CLUSTER_VERSION', defaultValue: '1.35', description: 'Enter The Cluster Version')
-    string(name: 'SUBNET_IDS', description: 'Comma-separated list of subnet IDs for the node group')
-    string(name: 'SECURITY_GROUP', description: 'Security Group ID for the EKS cluster')
-    string(name: 'INSTANCE_TYPES', defaultValue: 'c6a.large', description: 'Instance types for the node group')
-    string(name: 'Action', choices: ['deploy', 'delete'], description: 'Choose the action to perform (deploy or delete)')
+    parameters {
+        string(name: 'CLUSTER_NAME', description: 'Name of the CloudFormation stack to create')
+        string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region to deploy the stack')
+        string(name: 'CLUSTER_VERSION', defaultValue: '1.35', description: 'Enter The Cluster Version')
+        string(name: 'SUBNET_IDS', description: 'Comma-separated list of subnet IDs for the node group')
+        string(name: 'SECURITY_GROUP', description: 'Security Group ID for the EKS cluster')
+        string(name: 'INSTANCE_TYPES', defaultValue: 'c6a.large', description: 'Instance types for the node group')
+        choice(name: 'Action', choices: ['deploy', 'delete'], description: 'Choose the action to perform (deploy or delete)') 
+    }
 
-}
-
-    stages{
-        stage('Git Checkout'){
-            steps{
+    stages {
+        stage('Git Checkout') {
+            steps {
                 git branch: 'main', url: 'https://github.com/yukesh-v/EKS-Karpenter.git'
             }
         }
-        stage('pre-flight-check'){
-            steps{
-                sh 'python pre-flight-check.py --region ${REGION} --cluster_name ${CLUSTER_NAME}' 
+
+        stage('pre-flight-check') {
+            steps {
+                sh "python pre-flight-check.py --region ${params.REGION} --cluster_name ${params.CLUSTER_NAME}" 
             }
         }
-        stage('deploy-eks-cluster'){
-                when{
-                    ${params.Action} == deploy }
-                  steps{
-                    sh 'python eks-creation.py --stack_name ${CLUSTER_NAME} --region ${REGION} --subnet-ids ${SUBNET_IDS} --security-group ${SECURITY_GROUP} --cluster_version ${CLUSTER_VERSION} --instance_types ${INSTANCE_TYPES} --cluster_name ${CLUSTER_NAME}'
-                }
-            }
-        stage('delete-eks-cluster'){
-                when{
-                    ${params.Action} == delete }
-                  steps{
-                    sh 'python eks-deletion.py --stack_name ${CLUSTER_NAME} --region ${REGION}'
-                }
-            }
-        stage('Update kubeconfig'){
-            
-                when{
-                    ${params.Action} == deploy }
-                  steps{
-                sh 'aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${REGION}'
-             }
-          }
 
-        stage('Install Karpenter'){
-                when{
-                    ${params.Action} == deploy }
-            steps{
-                ansiblePlaybook playbook: "install-karpenter.yaml -vvv --extra-vars 'cluster_name=${CLUSTER_NAME} region=${REGION}'" 
+        stage('deploy-eks-cluster') {
+            when {
+                expression { params.Action == 'deploy' } 
             }
-          }
+            steps {
+                sh "python eks-creation.py --stack_name ${params.CLUSTER_NAME} --region ${params.REGION} --subnet-ids ${params.SUBNET_IDS} --security-group ${params.SECURITY_GROUP} --cluster_version ${params.CLUSTER_VERSION} --instance_types ${params.INSTANCE_TYPES} --cluster_name ${params.CLUSTER_NAME}"
+            }
+        }
 
-        post{
-            always{
-                cleanWs()
+        stage('delete-eks-cluster') {
+            when {
+                expression { params.Action == 'delete' }
             }
+            steps {
+                sh "python eks-deletion.py --stack_name ${params.CLUSTER_NAME} --region ${params.REGION}"
+            }
+        }
+
+        stage('Update kubeconfig') {
+            when {
+                expression { params.Action == 'deploy' }
+            }
+            steps {
+                sh "aws eks update-kubeconfig --name ${params.CLUSTER_NAME} --region ${params.REGION}"
+            }
+        }
+
+        stage('Install Karpenter') {
+            when {
+                expression { params.Action == 'deploy' }
+            }
+            steps {
+                ansiblePlaybook playbook: "install-karpenter.yaml -vvv --extra-vars 'cluster_name=${params.CLUSTER_NAME} region=${params.REGION}'" 
+            }
+        }
+    } 
+    post {
+        always {
+            cleanWs()
         }
     }
 }
