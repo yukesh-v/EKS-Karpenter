@@ -1,6 +1,5 @@
 - name: Install Karpenter in the cluster
   hosts: localhost
-  become: true
   gather_facts: false
   vars: 
     CLUSTER_NAME: "{{ cluster_name }}"
@@ -8,20 +7,18 @@
   pre_tasks:
   - name: Install Kubectl
     shell: |
-      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      chmod +x kubectl
-      mkdir -p ~/.local/bin
-      mv ./kubectl ~/.local/bin/kubectl
-
+       sudo curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+       sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+       
   - name: Install kubens
     shell: |
       sudo apt-get install -y kubectx
 
   - name: Install helm
     shell: |
-      curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-      chmod 700 get_helm.sh
-      ./get_helm.sh
+      sudo curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+      sudo chmod 700 get_helm.sh
+      sudo ./get_helm.sh
       rm get_helm.sh
       
   roles: 
