@@ -23,7 +23,7 @@
 - name: Set environment variables
   shell: |
     cd /tmp;
-    ./env-variables.sh
+    ./env-variables.sh $CLUSTER_NAME
     rm -rf /tmp/env-variables.sh
 
 - name: Copy karpenter IAM Policy script 
