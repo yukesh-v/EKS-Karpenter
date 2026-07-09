@@ -1,7 +1,7 @@
 - name: Copy Karpenter namespace yaml 
   copy:
     src: "{{ item }}"
-    dest: "/tmp"
+    dest: "/tmp/"
     mode: '0755'
   with_items:
     - namespace.yaml
