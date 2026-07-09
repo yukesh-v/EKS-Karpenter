@@ -1,6 +1,16 @@
+- name: Copy Karpenter namespace yaml 
+  copy:
+    src: "{{ item }}"
+    dest: "/tmp"
+    mode: '0755'
+  with_items:
+    - namespace.yaml
+    
 - name: Create Karpenter namespace in the cluster
   shell: |
-    kubectl apply -f {{ playbook_dir }}/Karpenter/files/namespace.yaml
+    cd /tmp
+    kubectl apply -f namespace.yaml
+    rm -rf namespace.yaml
   
 - name: Copy variable scripts 
   copy:
