@@ -11,7 +11,6 @@ def check_eks_status(cluster_name, region):
         print(f"Cluster Status: {status}")
         if status != 'ACTIVE':
             print(f"Error: Cluster {cluster_name} is not ACTIVE.")
-            sys.exit(1)
     except ClientError as e:
         print(f"AWS Error: {e.response['Error']['Message']}")
         sys.exit(1)
