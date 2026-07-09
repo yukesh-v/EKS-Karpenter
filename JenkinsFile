@@ -29,7 +29,7 @@ pipeline {
                 expression { params.Action == 'deploy' } 
             }
             steps {
-                sh "python3 eks-creation.py --stack_name ${params.CLUSTER_NAME} --region ${params.REGION} --subnet-ids ${params.SUBNET_IDS} --security-group ${params.SECURITY_GROUP} --cluster_version ${params.CLUSTER_VERSION} --instance_types ${params.INSTANCE_TYPES} --cluster_name ${params.CLUSTER_NAME}"
+                sh "python3 eks-creation.py --stack_name ${params.CLUSTER_NAME} --region ${params.REGION} --subnet-ids ${params.SUBNET_IDS} --security-group ${params.SECURITY_GROUP} --cluster_version ${params.CLUSTER_VERSION} --instance_types ${params.INSTANCE_TYPES}"
             }
         }
 
