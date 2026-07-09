@@ -5,5 +5,5 @@ metadata:
   labels: 
     name: karpenter
     env: non-prod
-  annotaions: 
+  annotations: 
     description: "Karpenter is an node provisioning project built for Kubernetes. It automatically launches just the right compute resources to handle your cluster's applications."
