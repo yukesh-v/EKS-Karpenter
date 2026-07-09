@@ -56,7 +56,7 @@ pipeline {
                 expression { params.Action == 'deploy' }
             }
             steps {
-               sh "ansible-playbook install-karpenter.yaml -vvv --extra-vars 'cluster_name=${params.CLUSTER_NAME} region=${params.REGION}'" 
+               sh "ansible-playbook install-karpenter.yaml --extra-vars 'cluster_name=${params.CLUSTER_NAME} region=${params.REGION}'" 
             }
         }
     } 
