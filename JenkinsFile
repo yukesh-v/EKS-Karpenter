@@ -15,7 +15,7 @@ parameters {
     stages{
         stage(Git Checkout){
             steps{
-                git branch: 'main', url: 
+                git branch: 'main', url: 'https://github.com/yukesh-v/EKS-Karpenter.git'
             }
         }
         stage(pre-flight-check){
