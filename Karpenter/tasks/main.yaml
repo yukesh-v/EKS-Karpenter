@@ -75,10 +75,16 @@
 - name: Copy Karpenter helm charts 
   copy: 
     src: "{{ item }}"
-    dest: /tmp/karpenter
+    dest: /tmp/karpenter/
     mode: '0755'
   with_items:
-    - karpenter
+    - karpenter/
+    
+- name: Install Karpenter CRDs
+  shell: |
+     cd /tmp;
+     kubectl apply -f karpenter-crds.yaml -n karpenter
+     rm -rf karpenter-crds.yaml
 
 - name: Install Karpenter in the cluster
   shell: |
@@ -86,13 +92,7 @@
     helm install karpenter . --namespace karpenter  --set CLUSTER_NAME=${CLUSTER_NAME}  --set ALIAS_VERSION=${ALIAS_VERSION}
     rm -rf /tmp/karpenter
 
-
 - name: Verify Karpenter installation
   shell: |
     kubectl get all -n karpenter
-
-
-
-
-
     
