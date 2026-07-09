@@ -20,7 +20,7 @@ parameters {
         }
         stage(pre-flight-check){
             steps{
-                sh 'python pre-flight-check.py' 
+                sh 'python pre-flight-check.py --region ${REGION} --cluster_name ${CLUSTER_NAME}' 
             }
         }
         stage(deploy-eks-cluster){

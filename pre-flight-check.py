@@ -1,4 +1,5 @@
 import sys
+import argparse
 import boto3
 from botocore.exceptions import ClientError
 
@@ -16,7 +17,13 @@ def check_eks_status(cluster_name, region):
         sys.exit(1)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: verify_cluster.py <cluster_name> <region>")
-        sys.exit(1)
-    check_eks_status(sys.argv[1], sys.argv[2])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cluster_name", required=True)
+    parser.add_argument("--region", required=True)
+
+    args = parser.parse_args()
+
+    check_eks_status(
+        region=args.region,
+        cluster_name=args.cluster_name
+    )
