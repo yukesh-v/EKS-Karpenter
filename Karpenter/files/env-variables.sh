@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export KARPENTER_NAMESPACE=karpenter
+export KARPENTER_NAMESPACE="karpenter"
 export CLUSTER_NAME=$1
 export KARPENTER_VERSION="1.13.0"
 
