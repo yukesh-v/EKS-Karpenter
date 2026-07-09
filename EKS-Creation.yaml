@@ -32,7 +32,7 @@ Resources:
 
   EKSNodeGroup:
     Type: AWS::EKS::Nodegroup
-    DependsOn: EKSCluster # Fixed: Forces cluster creation to complete first
+    DependsOn: EKSCluster
     Properties:
       ClusterName: !Ref ClusterName
       NodegroupName: !Sub '${ClusterName}-nodegroup'
@@ -51,7 +51,7 @@ Resources:
 
   VPCCNIAddon: 
     Type: AWS::EKS::Addon
-    DependsOn: EKSCluster 
+    DependsOn: EKSCluster
     Properties:
       AddonName: vpc-cni
       ClusterName: !Ref ClusterName
@@ -59,21 +59,21 @@ Resources:
 
   KubeProxyAddon:
     Type: AWS::EKS::Addon
-    DependsOn: EKSCluster 
+    DependsOn: EKSCluster
     Properties:
       AddonName: kube-proxy
       ClusterName: !Ref ClusterName
 
   CoreDNSAddon:
     Type: AWS::EKS::Addon
-    DependsOn: EKSCluster d
+    DependsOn: EKSCluster
     Properties:
       AddonName: coredns
       ClusterName: !Ref ClusterName
 
   EKSPodIdentityAddon:
     Type: AWS::EKS::Addon
-    DependsOn: EKSCluster 
+    DependsOn: EKSCluster
     Properties:
       AddonName: eks-pod-identity-agent 
       ClusterName: !Ref ClusterName
