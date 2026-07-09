@@ -1,0 +1,98 @@
+- name: Create Karpenter namespace in the cluster
+  shell: |
+    kubectl apply -f {{ playbook_dir }}/Karpenter/files/namespace.yaml
+  
+- name: Copy variable scripts 
+  copy:
+    src: "{{ item }}"
+    dest: /tmp/
+    mode: '0755'
+  with_items:
+    - env-variables.sh
+
+- name: Set environment variables
+  shell: |
+    cd /tmp;
+    ./env-variables.sh
+    rm -rf /tmp/env-variables.sh
+
+- name: Copy karpenter IAM Policy script 
+  copy: 
+    src: "{{ item }}"
+    dest: /tmp/
+    mode: '0755'
+  with_items:
+    - karpenter-iam-policies.sh
+
+- name: Create Karpenter IAM Policy
+  shell: |
+    cd /tmp;
+    ./karpenter-iam-policies.sh
+    rm -rf /tmp/karpenter-iam-policies.sh
+
+- name: Copy karpenter IAM Role script 
+  copy: 
+    src: "{{ item }}"
+    dest: /tmp/
+    mode: '0755'
+  with_items:
+    - karpenter-iam-role.sh
+
+- name: Create Karpenter IAM Role
+  shell: |  
+    cd /tmp;
+    ./karpenter-iam-role.sh
+    rm -rf /tmp/karpenter-iam-role.sh
+  
+- name: Copy Karpenter Tag script 
+  copy: 
+    src: "{{ item }}"
+    dest: /tmp/
+    mode: '0755'
+  with_items:
+    - karpenter-tag.sh
+
+- name: Tag the subnets & security groups for Karpenter
+  shell: |  
+    cd /tmp;
+    ./karpenter-tag.sh
+    rm -rf /tmp/karpenter-tag.sh
+
+- name: Copy Karpenter Helm chart script 
+  copy: 
+    src: "{{ item }}"
+    dest: /tmp/
+    mode: '0755'
+  with_items:
+    - karpenter-helm-chart.sh
+
+- name: Install Karpenter Helm chart
+  shell: |  
+    cd /tmp;
+    ./karpenter-helm-chart.sh
+    rm -rf /tmp/karpenter-helm-chart.sh
+
+- name: Copy Karpenter helm charts 
+  copy: 
+    src: "{{ item }}"
+    dest: /tmp/karpenter
+    mode: '0755'
+  with_items:
+    - karpenter
+
+- name: Install Karpenter in the cluster
+  shell: |
+    cd /tmp/karpenter;
+    helm install karpenter . --namespace karpenter  --set CLUSTER_NAME=${CLUSTER_NAME}  --set ALIAS_VERSION=${ALIAS_VERSION}
+    rm -rf /tmp/karpenter
+
+
+- name: Verify Karpenter installation
+  shell: |
+    kubectl get all -n karpenter
+
+
+
+
+
+    

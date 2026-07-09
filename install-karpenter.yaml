@@ -1,0 +1,32 @@
+- name: Install Karpenter in the cluster
+  hosts: localhost
+  gather_facts: false
+  vars: 
+    CLUSTER_NAME: "{{ cluster_name }}"
+    AWS_REGION: "{{ region }}"
+  pre_tasks:
+  - name: Install Kubectl
+    shell: |
+      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      chmod +x kubectl
+      mkdir -p ~/.local/bin
+      mv ./kubectl ~/.local/bin/kubectl
+
+  - name: Install kubens
+    shell: |
+      sudo apt-get install -y kubectx
+
+  - name: Install helm
+    shell: |
+      curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+      chmod 700 get_helm.sh
+      ./get_helm.sh
+      rm get_helm.sh
+
+  - name: Update kubectl context to use the EKS cluster
+    shell: |
+      aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME}
+      
+  roles: 
+    - role: Karpenter
+ 

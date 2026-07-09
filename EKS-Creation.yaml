@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+    EKS Cluster creation, Node group creation and Addons deployment in a single template. This template will create an EKS cluster, a node group and attach the required addons to the cluster.
+Parameters:
+   ClusterName:
+    Type: String
+    Description: Enter the name of your existing EKS Cluster
+
+   SubnetIds:
+     Type: String
+     Description: Enter the Subnet IDs (comma separated)
+ 
+   SecurityGroup:
+     Type: String
+     Description: Enter the Security Group ID
+   
+   ClusterVersion:
+     Type: String
+     Description: Enter the EKS Cluster version 
+
+   InstanceTypes:
+    Type: String
+    Description: Enter the instance types
+
+Resources:
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref ClusterName
+      Version: !Ref ClusterVersion
+      RoleArn: arn:aws:iam::949829288387:role/AmazonEKSClusterRole
+      ResourcesVpcConfig:
+        SubnetIds: !Split [",", !Ref SubnetIds]
+        SecurityGroupIds: 
+          - !Ref SecurityGroup
+
+  EKSNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref ClusterName
+      NodegroupName: !Sub '${ClusterName}-nodegroup'
+      NodeRole: "arn:aws:iam::949829288387:role/EKS-WorkerNode-Role"
+      Subnets: !Split [",", !Ref SubnetIds]
+      InstanceTypes:
+        - !Ref InstanceTypes
+      DiskSize: 20
+      ScalingConfig:
+        DesiredSize: 1
+        MaxSize: 3
+        MinSize: 1
+      Tags: 
+        Name: !Sub '${ClusterName}-worker-node'
+        Role: 'Worker-Node'
+
+  VPCCNIAddon: 
+    Type: AWS::EKS::Addon
+    Properties:
+      AddonName: vpc-cni
+      ClusterName: !Ref ClusterName
+      ResolveConflicts: OVERWRITE 
+
+  KubeProxyAddon:
+    Type: AWS::EKS::Addon
+    Properties:
+      AddonName: kube-proxy
+      ClusterName: !Ref ClusterName
+
+  CoreDNSAddon:
+    Type: AWS::EKS::Addon
+    Properties:
+      AddonName: coredns
+      ClusterName: !Ref ClusterName
+
+  EKSPodIdentityAddon:
+    Type: AWS::EKS::Addon
+    Properties:
+      AddonName: eks-pod-identity-agent 
+      ClusterName: !Ref ClusterName
+
+Outputs:
+  ClusterName:
+    Description: The name of the EKS cluster
+    Value: !Ref EKSCluster

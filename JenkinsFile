@@ -1,0 +1,65 @@
+pipeline{
+    agent any
+
+parameters {
+    string(name: 'CLUSTER_NAME', description: 'Name of the CloudFormation stack to create')
+    string(name: 'REGION', defaultValue: 'ap-south-1', description: 'AWS region to deploy the stack')
+    string(name: 'CLUSTER_VERSION', defaultValue: '1.35', description: 'Enter The Cluster Version')
+    string(name: 'SUBNET_IDS', description: 'Comma-separated list of subnet IDs for the node group')
+    string(name: 'SECURITY_GROUP', description: 'Security Group ID for the EKS cluster')
+    string(name: 'INSTANCE_TYPES', defaultValue: 'c6a.large', description: 'Instance types for the node group')
+    string(name: 'Action', choices: ['deploy', 'delete'], description: 'Choose the action to perform (deploy or delete)')
+
+}
+
+    stages{
+        stage(Git Checkout){
+            steps{
+                git branch: 'main', url: 
+            }
+        }
+        stage(pre-flight-check){
+            steps{
+                sh 'python pre-flight-check.py' 
+            }
+        }
+        stage(deploy-eks-cluster){
+            steps{
+                when{
+                    ${params.Action} == deploy
+                    sh 'python eks-creation.py --stack_name ${CLUSTER_NAME} --region ${REGION} --subnet-ids ${SUBNET_IDS} --security-group ${SECURITY_GROUP} --cluster_version ${CLUSTER_VERSION} --instance_types ${INSTANCE_TYPES} --cluster_name ${CLUSTER_NAME}'
+                }
+            }
+        }
+        stage(delete-eks-cluster){
+            steps{
+                when{
+                    ${params.Action} == delete
+                    sh 'python eks-deletion.py --stack_name ${CLUSTER_NAME} --region ${REGION}'
+                }
+            }
+        }
+        stage(Update kubeconfig){
+            steps{
+                when{
+                    ${params.Action} == deploy
+                sh 'aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${REGION}'
+             }
+          }
+        }
+        stage(Install Karpenter){
+            steps{
+                when{
+                    ${params.Action} == deploy
+                ansiblePlaybook playbook: "install-karpenter.yaml -vvv --extra-vars 'cluster_name=${CLUSTER_NAME} region=${REGION}'" 
+            }
+          }
+        }
+
+        post{
+            always{
+                cleanWs()
+            }
+        }
+    }
+}
