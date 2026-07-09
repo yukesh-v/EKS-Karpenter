@@ -13,17 +13,17 @@ parameters {
 }
 
     stages{
-        stage(Git Checkout){
+        stage('Git Checkout'){
             steps{
                 git branch: 'main', url: 'https://github.com/yukesh-v/EKS-Karpenter.git'
             }
         }
-        stage(pre-flight-check){
+        stage('pre-flight-check'){
             steps{
                 sh 'python pre-flight-check.py --region ${REGION} --cluster_name ${CLUSTER_NAME}' 
             }
         }
-        stage(deploy-eks-cluster){
+        stage('deploy-eks-cluster'){
             steps{
                 when{
                     ${params.Action} == deploy
@@ -31,7 +31,7 @@ parameters {
                 }
             }
         }
-        stage(delete-eks-cluster){
+        stage('delete-eks-cluster'){
             steps{
                 when{
                     ${params.Action} == delete
@@ -39,7 +39,7 @@ parameters {
                 }
             }
         }
-        stage(Update kubeconfig){
+        stage('Update kubeconfig'){
             steps{
                 when{
                     ${params.Action} == deploy
@@ -47,7 +47,7 @@ parameters {
              }
           }
         }
-        stage(Install Karpenter){
+        stage('Install Karpenter'){
             steps{
                 when{
                     ${params.Action} == deploy
