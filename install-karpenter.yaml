@@ -1,9 +1,6 @@
 - name: Install Karpenter in the cluster
   hosts: localhost
   gather_facts: false
-  vars: 
-    CLUSTER_NAME: "{{ cluster_name }}"
-    AWS_REGION: "{{ region }}"
   pre_tasks:
   - name: Install Kubectl
     shell: |
